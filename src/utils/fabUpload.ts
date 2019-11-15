@@ -10,6 +10,8 @@ type FabUploadPayload = {
   bundle_id: string
   api_key: string,
   sitename: string,
+  repository: string,
+  branch: string
 }
 
 const fabUpload = async (obj: FabUploadPayload) => {

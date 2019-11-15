@@ -1,13 +1,13 @@
 import { Command, flags } from '@oclif/command'
 import { error } from "./utils/log"
-import checksumFile from "./utils/checksumFile"
-import { getLastCommit } from "./utils/git"
+import { doesFileExist, checksumFile } from "./utils"
+import { getLastCommit, getRepository, getCurrentBranch } from "./utils/git"
 import fabUpload from "./utils/fabUpload"
 import generateFab from './utils/generateFab'
 import uploadBundleToS3 from "./utils/uploadBundleToS3"
+import { BuildStatus } from "./enums"
 
-const repositoryFilePath = "~/Work/linc-front-end"
-const fabFilePath = "../fab.zip"
+const FAB_FILE_PATH = "../fab.zip"
 
 class LincFabUpload extends Command {
   static description = 'describe the command here'
@@ -34,25 +34,46 @@ class LincFabUpload extends Command {
   async run() {
     const { args, flags } = this.parse(LincFabUpload)
     const { sitename, api_key } = args
-    const commit = await getLastCommit(repositoryFilePath)
+
+    // gather commit metadata
+    const commit = await getLastCommit()
+    const branch = await getCurrentBranch()
+    const repository = await getRepository()
+
     const buildInfo = await generateFab()
-    if (buildInfo.status === "success") {
-      const bundle_id = checksumFile(fabFilePath)
-      if (bundle_id) {
-        if (commit) {
-          // post to "/fab_uplaod"
-          const response = await fabUpload({
-            api_key, sitename, commit, buildInfo, bundle_id
-          })
-          // use returned signedRequest to upload FAB to S3
-          if (response.s3 && response.s3.signedRequest) {
-            const { signedRequest } = response.s3
-            await uploadBundleToS3(signedRequest, "../fab.zip")
-            console.log(response.previewUrls)
-          }
+
+    const buildPassed = buildInfo.status === BuildStatus.SUCCESS
+    if (buildPassed) {
+      const fabExists = doesFileExist(FAB_FILE_PATH)
+      if (fabExists) {
+        // generate bundle_id
+        const bundle_id = checksumFile(FAB_FILE_PATH)
+
+        // post to "/fab_uplaod"
+        const apiResponse = await fabUpload({
+          api_key,
+          sitename,
+          branch,
+          repository,
+          commit,
+          buildInfo,
+          bundle_id
+        })
+        if (apiResponse.s3.success) {
+          const s3Response = await uploadBundleToS3(apiResponse.s3.signedRequest, "../fab.zip")
+          if (s3Response) { }
+          console.log("Preview URLs:")
+          apiResponse.previewUrls.forEach((url: string) => console.log(url));
+        } else {
+          error(`Error: Failed to upload bundle`)
+          throw new Error('FAB upload error')
         }
+      } else {
+        error(`Error: No fab.zip found at provided path ${FAB_FILE_PATH}.`)
+        throw new Error('Bad file path error')
       }
     } else {
+      error(`Error: Build failed`)
       throw new Error("Build failed")
     }
   }
