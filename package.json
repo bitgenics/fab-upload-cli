@@ -47,6 +47,7 @@
   },
   "repository": "bitgenics/fab-upload-cli",
   "scripts": {
+    "dev": "node ./bin/run",
     "posttest": "tslint -p test -t stylish",
     "prepack": "rm -rf lib && tsc -b",
     "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
