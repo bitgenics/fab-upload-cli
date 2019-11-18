@@ -1,5 +1,6 @@
 const util = require('util')
 const exec = util.promisify(require('child_process').exec)
+import { CommitMetadata } from "../types"
 
 export const getCurrentBranch = async () => {
   const { stdout, stderr } = await exec("git symbolic-ref --short HEAD")
@@ -41,4 +42,16 @@ export const getLastCommit = async () => {
   } else {
     throw new Error(stderr)
   }
+}
+
+export const getGitData = async () => {
+  const commit = await getLastCommit()
+  const branch = await getCurrentBranch()
+  const repository = await getRepository()
+  const CommitMetadata: CommitMetadata = {
+    ...commit,
+    branch,
+    repository
+  }
+  return CommitMetadata
 }
