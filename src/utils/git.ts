@@ -36,7 +36,7 @@ export const getLastCommit = async () => {
   const { stdout, stderr } = await exec(command)
   if (stdout) {
     const commit = JSON.parse(stdout)
-    commit.committerDate = parseInt(commit.committerDate) // parse unix time stamp to Int
+    commit.committerDate = parseInt(commit.committerDate) * 1000 // unix time stamp in milliseconds
     return commit
   } else {
     throw new Error(stderr)
