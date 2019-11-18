@@ -1,11 +1,15 @@
 import { Command, flags } from '@oclif/command'
 import { error } from "./utils/log"
 import { doesFileExist, checksumFile } from "./utils"
-import { getLastCommit, getRepository, getCurrentBranch } from "./utils/git"
-import fabUpload from "./utils/fabUpload"
+import getSignedRequest from "./utils/getSignedRequest"
 import generateFab from './utils/generateFab'
+import { BuildStatus, SignedReqStatusText } from "./enums"
 import uploadBundleToS3 from "./utils/uploadBundleToS3"
-import { BuildStatus } from "./enums"
+import uploadMetadata from "./utils/uploadMetadata"
+import { getGitData } from "./utils/git"
+import { CommitMetadata } from "./types"
+
+const logUrls = (urls) => array.forEach(url => console.log(url));
 
 const FAB_FILE_PATH = "../fab.zip"
 
@@ -32,49 +36,67 @@ class LincFabUpload extends Command {
   }]
 
   async run() {
-    const { args, flags } = this.parse(LincFabUpload)
+    const { args } = this.parse(LincFabUpload)
     const { sitename, api_key } = args
 
-    // gather commit metadata
-    const commit = await getLastCommit()
-    const branch = await getCurrentBranch()
-    const repository = await getRepository()
-
+    // generate FAB
     const buildInfo = await generateFab()
 
     const buildPassed = buildInfo.status === BuildStatus.SUCCESS
     if (buildPassed) {
       const fabExists = doesFileExist(FAB_FILE_PATH)
       if (fabExists) {
-        // generate bundle_id
+        // Get signed url
         const bundle_id = checksumFile(FAB_FILE_PATH)
+        const signedRequestResponse = await getSignedRequest({ api_key, sitename, bundle_id })
+        const { statusText } = signedRequestResponse
+        const {
+          NOT_AUTHORIZED,
+          SERVER_ERROR,
+          BUNDLE_UNIQUE,
+          BUNDLE_EXISTS
+        } = SignedReqStatusText
 
-        // post to "/fab_uplaod"
-        const apiResponse = await fabUpload({
-          api_key,
-          sitename,
-          branch,
-          repository,
-          commit,
-          buildInfo,
-          bundle_id
-        })
-        if (apiResponse.s3.success) {
-          const s3Response = await uploadBundleToS3(apiResponse.s3.signedRequest, "../fab.zip")
-          if (s3Response) { }
-          console.log("Preview URLs:")
-          apiResponse.previewUrls.forEach((url: string) => console.log(url));
-        } else {
-          error(`Error: Failed to upload bundle`)
-          throw new Error('FAB upload error')
+        // handle api repsonse
+        switch (statusText) {
+          case statusText === NOT_AUTHORIZED:
+            error(`Error: Not authorized. Please verify your sitename and API key.`)
+            throw new Error('Authorization error.')
+
+          case statusText === SERVER_ERROR:
+            error(`Error: An error occured while attempting to upload FAB. Please try again later.`)
+            throw new Error('FAB upload error.')
+
+          case statusText === BUNDLE_UNIQUE:
+            const s3Response = await uploadBundleToS3(signedRequestResponse.signedRequest, "../fab.zip")
+            if (s3Response.statusText === "OK") {
+              const gitMetaData: CommitMetadata = await getGitData()
+              const response = await uploadMetadata({
+                sitename,
+                api_key,
+                bundle_id,
+                commit_info: gitMetaData,
+                build_info: buildInfo,
+              })
+              logUrls(response.urls)
+            } else {
+              error(`Error: An error occured while attempting to upload FAB. Please try again later.`)
+              throw new Error('FAB upload error.')
+            }
+            break
+
+          case statusText === BUNDLE_EXISTS:
+            const gitMetaData: CommitMetadata = await getGitData()
+            const response = await uploadMetadata({
+              sitename,
+              api_key,
+              commit_info: gitMetaData,
+              build_info: buildInfo,
+            })
+            logUrls(response.urls)
+            break
         }
-      } else {
-        error(`Error: No fab.zip found at provided path ${FAB_FILE_PATH}.`)
-        throw new Error('Bad file path error')
       }
-    } else {
-      error(`Error: Build failed`)
-      throw new Error("Build failed")
     }
   }
 }
