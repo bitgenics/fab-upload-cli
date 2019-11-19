@@ -1,8 +1,8 @@
 export enum BuildStatus { SUCCESS = "success", FAILED = "failed" }
 
-export enum SignedReqStatusText {
-  BUNDLE_EXISTS = "bundle_exists",
-  BUNDLE_UNIQUE = "bundle_unique",
+export enum StatusTextOptions {
+  DUPLICATE_BUNDLE = "duplicate_bundle",
   NOT_AUTHORIZED = "not_authorized",
-  SERVER_ERROR = "server_error"
+  SERVER_ERROR = "server_error",
+  OK = "ok",
 }
