@@ -1,102 +1,72 @@
 import { Command, flags } from '@oclif/command'
-import { error } from "./utils/log"
+import { log, error } from "./utils/log"
 import { doesFileExist, checksumFile } from "./utils"
 import getSignedRequest from "./utils/getSignedRequest"
 import generateFab from './utils/generateFab'
-import { BuildStatus, SignedReqStatusText } from "./enums"
-import uploadBundleToS3 from "./utils/uploadBundleToS3"
-import uploadMetadata from "./utils/uploadMetadata"
-import { getGitData } from "./utils/git"
-import { CommitMetadata } from "./types"
+import { BuildStatus, StatusTextOptions } from "./enums"
+import handleDuplicateBundle from "./handlers/handleDuplicateBundle"
+import handleUniqueBundle from "./handlers/handleUniqueBundle"
 
-const logUrls = (urls) => array.forEach(url => console.log(url));
+const { SITENAME, API_KEY } = process.env
+const FAB_FILE_PATH = "./fab.zip"
 
-const FAB_FILE_PATH = "../fab.zip"
+const {
+  DUPLICATE_BUNDLE,
+  NOT_AUTHORIZED,
+  SERVER_ERROR,
+  OK,
+} = StatusTextOptions
 
 class LincFabUpload extends Command {
   static description = 'describe the command here'
-
   static flags = {
     help: flags.help({ char: 'h' }),
-    config: flags.string({
-      char: 'c',
-      description: 'Path to config file',
-      default: 'fab.config.json'
-    }),
   }
 
-  static args = [{
-    name: 'sitename',
-    required: true,
-    description: 'name of Linc site',
-  }, {
-    name: 'api_key',
-    required: true,
-    description: 'Linc API key',
-  }]
-
   async run() {
-    const { args } = this.parse(LincFabUpload)
-    const { sitename, api_key } = args
+    if (SITENAME && API_KEY) {
+      // generate FAB
+      log("Executing build:fab script")
+      const buildInfo = await generateFab()
 
-    // generate FAB
-    const buildInfo = await generateFab()
+      const buildPassed = buildInfo.status === BuildStatus.SUCCESS
+      if (buildPassed) {
+        log("FAB compile complete")
+        const fabExists = doesFileExist(FAB_FILE_PATH)
+        if (fabExists) {
+          // Get signed url
+          const bundle_id = checksumFile(FAB_FILE_PATH)
+          log("Validating FAB with Linc")
+          const srResponse = await getSignedRequest({ api_key: API_KEY, sitename: SITENAME, bundle_id })
 
-    const buildPassed = buildInfo.status === BuildStatus.SUCCESS
-    if (buildPassed) {
-      const fabExists = doesFileExist(FAB_FILE_PATH)
-      if (fabExists) {
-        // Get signed url
-        const bundle_id = checksumFile(FAB_FILE_PATH)
-        const signedRequestResponse = await getSignedRequest({ api_key, sitename, bundle_id })
-        const { statusText } = signedRequestResponse
-        const {
-          NOT_AUTHORIZED,
-          SERVER_ERROR,
-          BUNDLE_UNIQUE,
-          BUNDLE_EXISTS
-        } = SignedReqStatusText
+          switch (srResponse.statusText) {
+            case OK:
+              log("Unique FAB detected!")
+              await handleUniqueBundle(srResponse.signedRequest, SITENAME, API_KEY, bundle_id, buildInfo)
+              break
 
-        // handle api repsonse
-        switch (statusText) {
-          case statusText === NOT_AUTHORIZED:
-            error(`Error: Not authorized. Please verify your sitename and API key.`)
-            throw new Error('Authorization error.')
+            case DUPLICATE_BUNDLE:
+              log("Duplicate FAB detected")
+              await handleDuplicateBundle(SITENAME, API_KEY, buildInfo)
+              break
 
-          case statusText === SERVER_ERROR:
-            error(`Error: An error occured while attempting to upload FAB. Please try again later.`)
-            throw new Error('FAB upload error.')
+            case NOT_AUTHORIZED:
+              error(`Error: Not authorized. Please verify your SITENAME and API_KEY.`)
+              throw new Error('Authorization error.')
 
-          case statusText === BUNDLE_UNIQUE:
-            const s3Response = await uploadBundleToS3(signedRequestResponse.signedRequest, "../fab.zip")
-            if (s3Response.statusText === "OK") {
-              const gitMetaData: CommitMetadata = await getGitData()
-              const response = await uploadMetadata({
-                sitename,
-                api_key,
-                bundle_id,
-                commit_info: gitMetaData,
-                build_info: buildInfo,
-              })
-              logUrls(response.urls)
-            } else {
+            case SERVER_ERROR:
               error(`Error: An error occured while attempting to upload FAB. Please try again later.`)
               throw new Error('FAB upload error.')
-            }
-            break
+          }
 
-          case statusText === BUNDLE_EXISTS:
-            const gitMetaData: CommitMetadata = await getGitData()
-            const response = await uploadMetadata({
-              sitename,
-              api_key,
-              commit_info: gitMetaData,
-              build_info: buildInfo,
-            })
-            logUrls(response.urls)
-            break
+        } else {
+          error(`Error: Unable to locate FAB at specified file path`)
+          throw new Error('Environment vars errors.')
         }
       }
+    } else {
+      error(`Error: Missing SITENAME & API_KEY environment variables`)
+      throw new Error('Environment vars errors.')
     }
   }
 }
