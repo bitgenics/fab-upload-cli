@@ -19,3 +19,5 @@ export const checksumFile = (filePath: string) => {
     .update(data)
     .digest('hex')
 }
+
+export const logUrls = (urls: Array<string>) => urls.forEach(url => console.log(url));
