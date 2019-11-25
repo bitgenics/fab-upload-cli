@@ -1,4 +1,4 @@
-import { logUrls } from "../utils"
+import { logUrls, composeLincCommitPageUrl } from "../utils"
 import { getGitData } from "../utils/git"
 import { log, error } from "../utils/log"
 
@@ -37,8 +37,13 @@ const handleUniqueBundle = async (
 
     if (response.ok) {
       log("Done!")
-      log("FAB preview URLs:")
-      logUrls(response.urls)
+      const { preview_urls } = response
+      if (preview_urls) {
+        log("FAB preview URLs:")
+        logUrls(response.preview_urls)
+        log("View commit on Linc:")
+        composeLincCommitPageUrl(sitename, gitMetaData.commitHash)
+      }
     } else {
       handleServerError(response.error)
     }
