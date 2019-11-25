@@ -1,6 +1,6 @@
 import fetch from "node-fetch"
 
-const FAB_UPLOAD_ENDPOINT = "https://graphql.linc.sh/fab_upload/signed_request"
+const PROD_ENDPOINT = "https://graphql.linc.sh/fab_upload/signed_request"
 const DEV_ENDPOINT = "http://localhost:3001/fab_upload/signed_request"
 
 type signedRequestPayload = {
@@ -10,7 +10,7 @@ type signedRequestPayload = {
 }
 
 const getSignedRequest = async (data: signedRequestPayload) => {
-  const response = await fetch(DEV_ENDPOINT, {
+  const response = await fetch(PROD_ENDPOINT, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"

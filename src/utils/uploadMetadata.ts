@@ -1,7 +1,7 @@
 import fetch from "node-fetch"
 import { CommitMetadata, BuildInfo } from "../types"
 
-const FAB_UPLOAD_ENDPOINT = "https://graphql.linc.sh//fab_upload/upload_metadata"
+const PROD_ENDPOINT = "https://graphql.linc.sh//fab_upload/upload_metadata"
 const DEV_ENDPOINT = "http://localhost:3001/fab_upload/upload_metadata"
 
 type MetadataPayload = {
@@ -13,7 +13,7 @@ type MetadataPayload = {
 }
 
 const uploadMetadata = async (metadataPayload: MetadataPayload) => {
-  const response = await fetch(DEV_ENDPOINT, {
+  const response = await fetch(PROD_ENDPOINT, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
