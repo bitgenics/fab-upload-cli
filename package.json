@@ -1,11 +1,13 @@
 {
-  "name": "fab-upload-cli",
+  "name": "@bitgenics/fab-upload-cli",
   "version": "0.0.0",
   "author": "Tom Trinca @plexey",
   "bin": {
     "fab-upload": "./bin/run"
   },
-  "bugs": "https://github.com/bitgenics/fab-upload-cli/issues",
+  "bugs": {
+    "url": "https://github.com/bitgenics/fab-upload-cli/issues"
+  },
   "dependencies": {
     "@oclif/command": "^1",
     "@oclif/config": "^1",
@@ -45,12 +47,19 @@
   "oclif": {
     "bin": "fab-upload"
   },
-  "repository": "bitgenics/fab-upload-cli",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bitgenics/fab-upload-cli.git"
+  },
   "scripts": {
     "dev": "node ./bin/run",
     "posttest": "tslint -p test -t stylish",
     "prepack": "rm -rf lib && tsc -b",
     "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
   },
-  "types": "lib/index.d.ts"
+  "types": "lib/index.d.ts",
+  "description": "linc-fab-upload ===============",
+  "directories": {
+    "test": "test"
+  }
 }
