@@ -21,3 +21,5 @@ export const checksumFile = (filePath: string) => {
 }
 
 export const logUrls = (urls: Array<string>) => urls.forEach(url => console.log(url));
+
+export const composeLincCommitPageUrl = (sitename: string, commitHash: string) => `https://app.linc.sh/sites/${sitename}/commit/${commitHash}`
