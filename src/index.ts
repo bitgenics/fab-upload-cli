@@ -7,6 +7,7 @@ import { BuildStatus } from "./enums"
 import handleServerError from "./handlers/handleServerError"
 import handleDuplicateBundle from "./handlers/handleDuplicateBundle"
 import handleUniqueBundle from "./handlers/handleUniqueBundle"
+import handleBuildFailure from "./handlers/handleBuildFailure"
 
 const FAB_FILE_PATH = "./fab.zip"
 
@@ -51,6 +52,8 @@ class LincFabUpload extends Command {
           error(`Error: Unable to locate FAB at specified file path`)
           throw new Error('Environment vars errors.')
         }
+      } else {
+        await handleBuildFailure(LINC_SITE_NAME, LINC_API_KEY, buildInfo)
       }
     } else {
       error(`Error: Missing LINC_SITE_NAME & LINC_API_KEY environment variables`)
