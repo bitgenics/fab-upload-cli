@@ -48,7 +48,8 @@ export const getGitData = async () => {
   const commit = await getLastCommit()
   // const branch = await getCurrentBranch()
   const branch = "unknown-branch"
-  const repository = await getRepository()
+  // const repository = await getRepository()
+  const repository = "plexey/fab-upload-test-app"
   const CommitMetadata: CommitMetadata = {
     ...commit,
     branch,
