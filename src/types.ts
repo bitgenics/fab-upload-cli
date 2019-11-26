@@ -11,7 +11,12 @@ export type CommitMetadata = {
   repository: string,
 }
 
+type BuildLogType = {
+  cmd: string,
+  log: string
+}
+
 export type BuildInfo = {
   status: BuildStatus,
-  log: string
+  logs: Array<BuildLogType>
 }
