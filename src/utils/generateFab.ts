@@ -11,15 +11,25 @@ const generateFab = async () => {
       started_at,
       finished_at: Date.now(),
       status: BuildStatus.SUCCESS,
-      log: stdout,
-    };
+      logs: [
+        {
+          cmd: "npm run build:fab",
+          log: stdout
+        }
+      ]
+    }
   } catch (e) {
-    const { stdout, stderr } = e;
+    const { stdout, stderr } = e
     return {
       started_at,
       finished_at: Date.now(),
       status: BuildStatus.FAILED,
-      log: `${stdout}${stderr}`,
+      logs: [
+        {
+          cmd: "npm run build:fab",
+          log: stdout + stderr
+        }
+      ]
     }
   }
 };
