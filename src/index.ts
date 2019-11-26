@@ -4,6 +4,7 @@ import { doesFileExist, checksumFile } from "./utils"
 import getSignedRequest from "./utils/getSignedRequest"
 import generateFab from './utils/generateFab'
 import { BuildStatus } from "./enums"
+
 import handleServerError from "./handlers/handleServerError"
 import handleDuplicateBundle from "./handlers/handleDuplicateBundle"
 import handleUniqueBundle from "./handlers/handleUniqueBundle"
@@ -36,13 +37,17 @@ class LincFabUpload extends Command {
 
           if (srResponse.ok) {
             const { unique_bundle } = srResponse
+            const bundle_info = {
+              bundle_id,
+              unique_bundle
+            }
             if (unique_bundle === true) {
               log("Unique FAB detected!")
-              await handleUniqueBundle(srResponse.signed_request, LINC_SITE_NAME, LINC_API_KEY, bundle_id, buildInfo)
+              await handleUniqueBundle(srResponse.signed_request, LINC_SITE_NAME, LINC_API_KEY, bundle_info, buildInfo)
             }
             if (unique_bundle === false) {
               log("Duplicate FAB detected")
-              await handleDuplicateBundle(LINC_SITE_NAME, LINC_API_KEY, buildInfo)
+              await handleDuplicateBundle(LINC_SITE_NAME, LINC_API_KEY, bundle_info, buildInfo)
             }
           } else {
             console.log({ srResponse })

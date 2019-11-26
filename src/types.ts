@@ -20,3 +20,8 @@ export type BuildInfo = {
   status: BuildStatus,
   logs: Array<BuildLogType>
 }
+
+export type BundleInfo = {
+  unique_bundle: boolean,
+  bundle_id: string
+}

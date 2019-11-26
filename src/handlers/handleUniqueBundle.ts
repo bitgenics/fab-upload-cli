@@ -7,13 +7,13 @@ import uploadBundleToS3 from "../utils/uploadBundleToS3"
 
 import handleServerError from "./handleServerError"
 
-import { CommitMetadata, BuildInfo } from "../types"
+import { CommitMetadata, BuildInfo, BundleInfo } from "../types"
 
 const handleUniqueBundle = async (
   signedRequest: string,
   sitename: string,
   api_key: string,
-  bundle_id: string,
+  bundle_info: BundleInfo,
   build_info: BuildInfo
 ) => {
   log("Uploading FAB to Linc")
@@ -30,7 +30,7 @@ const handleUniqueBundle = async (
     const response = await uploadMetadata({
       sitename,
       api_key,
-      bundle_id,
+      bundle_info,
       commit_info: gitMetaData,
       build_info,
     })
