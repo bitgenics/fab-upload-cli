@@ -1,5 +1,5 @@
 import { logUrls, composeLincCommitPageUrl } from "../utils"
-import { getGitData } from "../utils/git"
+import { getGitMetaData } from "../utils"
 import { log, error } from "../utils/log"
 
 import uploadMetadata from "../utils/uploadMetadata"
@@ -23,7 +23,7 @@ const handleUniqueBundle = async (
     log("FAB successfully uploaded!")
 
     log("Gathering commit data")
-    const gitMetaData: CommitMetadata = await getGitData()
+    const gitMetaData: CommitMetadata = await getGitMetaData()
 
     log("Uploading commit data to Linc")
     const response = await uploadMetadata({

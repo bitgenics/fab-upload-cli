@@ -1,4 +1,4 @@
-import { getGitData } from "../utils/git"
+import { getGitMetaData } from "../utils"
 import { log } from "../utils/log"
 import uploadMetadata from "../utils/uploadMetadata"
 import handleServerError from "./handleServerError"
@@ -6,7 +6,7 @@ import { CommitMetadata, BuildInfo } from "../types"
 
 const handleBuildFailure = async (sitename: string, api_key: string, build_info: BuildInfo) => {
   log("Uploading Build record to Linc")
-  const gitMetaData: CommitMetadata = await getGitData()
+  const gitMetaData: CommitMetadata = await getGitMetaData()
 
   log("Uploading commit data to Linc")
   const response = await uploadMetadata({
