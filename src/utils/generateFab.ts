@@ -7,6 +7,7 @@ const generateFab = async () => {
   const started_at = Date.now()
   try {
     const { stdout } = await exec("npm run build:fab");
+    console.log(stdout)
     return {
       started_at,
       finished_at: Date.now(),
@@ -20,6 +21,7 @@ const generateFab = async () => {
     }
   } catch (e) {
     const { stdout, stderr } = e
+    console.log(stdout + stderr)
     return {
       started_at,
       finished_at: Date.now(),
