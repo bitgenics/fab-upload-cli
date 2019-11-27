@@ -9,7 +9,6 @@ const uploadBundleToS3 = async (signedRequest: string, pathToFab: string) => {
     },
     body: fs.readFileSync(pathToFab)
   })
-  console.log({ response })
   return response
 }
 

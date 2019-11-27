@@ -50,7 +50,6 @@ class LincFabUpload extends Command {
               await handleDuplicateBundle(LINC_SITE_NAME, LINC_API_KEY, bundle_info, buildInfo)
             }
           } else {
-            console.log({ srResponse })
             handleServerError(srResponse.error)
           }
         } else {

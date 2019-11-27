@@ -24,7 +24,6 @@ const handleUniqueBundle = async (
 
     log("Gathering commit data")
     const gitMetaData: CommitMetadata = await getGitData()
-    console.log({ gitMetaData })
 
     log("Uploading commit data to Linc")
     const response = await uploadMetadata({
