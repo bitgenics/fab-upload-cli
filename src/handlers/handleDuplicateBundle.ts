@@ -15,6 +15,7 @@ const duplicateBundle = async (sitename: string, api_key: string, bundle_info: B
     commit_info: gitMetaData,
     build_info: buildInfo,
   })
+  console.log({ response })
   if (response.ok) {
     log("Done!")
     const { preview_urls } = response
