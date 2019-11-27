@@ -18,10 +18,9 @@ const handleBuildFailure = async (sitename: string, api_key: string, build_info:
 
   if (response.ok) {
     log("Done!")
-    return
+    process.exit(1)
   } else {
     handleServerError(response.error)
-    return
   }
 }
 
