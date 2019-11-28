@@ -34,10 +34,8 @@ export const composeLincCommitPageUrl = (
 
 export const getGitMetaData = async () => {
   const platform = getCI()
-  console.log({ platform })
 
   const supportedPlatform = platform !== "unknown"
-  console.log({ supportedPlatform })
 
   if (supportedPlatform) {
     // pull branch & repo from environment variables
@@ -52,7 +50,6 @@ export const getGitMetaData = async () => {
       repository
     }
 
-    console.log({ commitMetadata })
     return commitMetadata
   } else {
     note("Note: Unsupported CI platform detected")
