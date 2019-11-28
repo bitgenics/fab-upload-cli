@@ -1,15 +1,5 @@
 const util = require('util')
 const exec = util.promisify(require('child_process').exec)
-import { CommitMetadata } from "../types"
-
-export const getCurrentBranch = async () => {
-  const { stdout, stderr } = await exec("git symbolic-ref --short HEAD")
-  if (stdout) {
-    return stdout.replace(/(\r\n|\n|\r)/gm, "");
-  } else {
-    throw new Error(stderr)
-  }
-}
 
 export const getRepository = async () => {
   const { stdout, stderr } = await exec("git ls-remote --get-url");
@@ -42,18 +32,4 @@ export const getLastCommit = async () => {
   } else {
     throw new Error(stderr)
   }
-}
-
-export const getGitData = async () => {
-  const commit = await getLastCommit()
-  // const branch = await getCurrentBranch()
-  const branch = "unknown-branch"
-  // const repository = await getRepository()
-  const repository = "plexey/fab-upload-test-app"
-  const CommitMetadata: CommitMetadata = {
-    ...commit,
-    branch,
-    repository
-  }
-  return CommitMetadata
 }
