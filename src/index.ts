@@ -13,10 +13,29 @@ import handleBuildFailure from "./handlers/handleBuildFailure"
 const FAB_FILE_PATH = "./fab.zip"
 
 class LincFabUpload extends Command {
-  static description = 'describe the command here'
+  static description = 'Builds and then uploads a FAB to Linc, along with some related build and git data.'
+
+  static examples = [
+    `$ fab-upload my-site-name`,
+    `$ fab-upload my-site-name -a my-api-key`
+  ]
+
   static flags = {
     help: flags.help({ char: 'h' }),
+    apiKey: flags.string({
+      char: 'a',
+      description: 'Your Linc site API key',
+      env: "LINC_API_KEY",
+      required: false,
+    }),
   }
+
+  static args = [
+    {
+      name: 'sitename',
+      required: false,
+    },
+  ]
 
   async run() {
     const { LINC_SITE_NAME, LINC_API_KEY } = process.env
