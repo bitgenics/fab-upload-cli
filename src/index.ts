@@ -38,49 +38,62 @@ class LincFabUpload extends Command {
   ]
 
   async run() {
-    const { LINC_SITE_NAME, LINC_API_KEY } = process.env
-    if (LINC_SITE_NAME && LINC_API_KEY) {
-      // generate FAB
-      log("Executing build:fab script")
-      const buildInfo = await generateFab()
+    const { args, flags } = this.parse(LincFabUpload)
 
-      const buildPassed = buildInfo.status === BuildStatus.SUCCESS
-      if (buildPassed) {
-        log("FAB compile complete")
-        const fabExists = doesFileExist(FAB_FILE_PATH)
-        if (fabExists) {
-          // Get signed url
-          const bundle_id = checksumFile(FAB_FILE_PATH)
-          log("Validating FAB with Linc")
-          const srResponse = await getSignedRequest({ api_key: LINC_API_KEY, sitename: LINC_SITE_NAME, bundle_id })
+    const LINC_SITE_NAME = args.sitename || process.env.LINC_SITE_NAME
+    const LINC_API_KEY = flags.apiKey || process.env.LINC_API_KEY
 
-          if (srResponse.ok) {
-            const { unique_bundle } = srResponse
-            const bundle_info = {
-              bundle_id,
-              unique_bundle
-            }
-            if (unique_bundle === true) {
-              log("Unique FAB detected!")
-              await handleUniqueBundle(srResponse.signed_request, LINC_SITE_NAME, LINC_API_KEY, bundle_info, buildInfo)
-            }
-            if (unique_bundle === false) {
-              log("Duplicate FAB detected")
-              await handleDuplicateBundle(LINC_SITE_NAME, LINC_API_KEY, bundle_info, buildInfo)
+    if (LINC_SITE_NAME) {
+      if (LINC_API_KEY) {
+
+        // generate FAB
+        log("Executing build:fab script")
+        const buildInfo = await generateFab()
+
+        const buildPassed = buildInfo.status === BuildStatus.SUCCESS
+        if (buildPassed) {
+          log("FAB compile complete")
+          const fabExists = doesFileExist(FAB_FILE_PATH)
+          if (fabExists) {
+            // Get signed url
+            const bundle_id = checksumFile(FAB_FILE_PATH)
+            log("Validating FAB with Linc")
+            const srResponse = await getSignedRequest({ api_key: LINC_API_KEY, sitename: LINC_SITE_NAME, bundle_id })
+
+            if (srResponse.ok) {
+              const { unique_bundle } = srResponse
+              const bundle_info = {
+                bundle_id,
+                unique_bundle
+              }
+              if (unique_bundle === true) {
+                log("Unique FAB detected!")
+                await handleUniqueBundle(srResponse.signed_request, LINC_SITE_NAME, LINC_API_KEY, bundle_info, buildInfo)
+              }
+              if (unique_bundle === false) {
+                log("Duplicate FAB detected")
+                await handleDuplicateBundle(LINC_SITE_NAME, LINC_API_KEY, bundle_info, buildInfo)
+              }
+            } else {
+              handleServerError(srResponse.error)
             }
           } else {
-            handleServerError(srResponse.error)
+            error(`Error: Unable to locate FAB at specified file path`)
+            throw new Error('Environment vars errors.')
           }
         } else {
-          error(`Error: Unable to locate FAB at specified file path`)
-          throw new Error('Environment vars errors.')
+          await handleBuildFailure(LINC_SITE_NAME, LINC_API_KEY, buildInfo)
         }
       } else {
-        await handleBuildFailure(LINC_SITE_NAME, LINC_API_KEY, buildInfo)
+        error(`Error: Missing API key.
+        You can pass your API key to fab-upload by assigning it to the environment variable 'LINC_API_KEY' or via the flag '--apiKey' or '-a'. 
+        For information on generating a Linc API key, visit the fab-upload docs: https://github.com/bitgenics/fab-upload-cli/blob/master/README.md`)
+        throw new Error('Missing sitename error.')
       }
     } else {
-      error(`Error: Missing LINC_SITE_NAME & LINC_API_KEY environment variables`)
-      throw new Error('Environment vars errors.')
+      error(`Error: Missing [SITENAME]. 
+        You can pass your sitename to fab-upload as an argument or by assigning it to the environment variable 'LINC_SITE_NAME'.`)
+      throw new Error('Missing sitename error.')
     }
   }
 }
