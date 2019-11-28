@@ -58,7 +58,7 @@
     "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
   },
   "types": "lib/index.d.ts",
-  "description": "linc-fab-upload ===============",
+  "description": "CI tool for building and uploading a Frontend Application Bundle to Linc.",
   "directories": {
     "test": "test"
   }
