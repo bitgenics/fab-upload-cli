@@ -1,12 +1,18 @@
-import { CommitMetadata, BuildInfo, BundleInfo } from "../types"
-import { logUrls, composeLincCommitPageUrl } from "../utils"
-import { getGitMetaData } from "../utils"
-import { log } from "../utils/log"
-import uploadMetadata from "../utils/uploadMetadata"
-
 import handleServerError from "./handleServerError"
 
-const duplicateBundle = async (sitename: string, api_key: string, bundle_info: BundleInfo, buildInfo: BuildInfo) => {
+import { CommitMetadata, BuildInfo, BundleInfo } from "../types"
+
+import { logUrls, composeLincCommitPageUrl } from "../utils"
+import { uploadMetadata } from "../utils/requests"
+import { getGitMetaData } from "../utils"
+import { log } from "../utils/log"
+
+const duplicateBundle = async (
+  sitename: string,
+  api_key: string,
+  bundle_info: BundleInfo,
+  buildInfo: BuildInfo
+) => {
   log("Gathering commit data")
   const gitMetaData: CommitMetadata = await getGitMetaData()
 

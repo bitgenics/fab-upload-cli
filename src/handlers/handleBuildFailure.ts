@@ -1,6 +1,6 @@
 import { getGitMetaData } from "../utils"
 import { log } from "../utils/log"
-import uploadMetadata from "../utils/uploadMetadata"
+import { uploadMetadata } from "../utils/requests"
 import handleServerError from "./handleServerError"
 import { CommitMetadata, BuildInfo } from "../types"
 

@@ -2,8 +2,7 @@ import { logUrls, composeLincCommitPageUrl } from "../utils"
 import { getGitMetaData } from "../utils"
 import { log, error } from "../utils/log"
 
-import uploadMetadata from "../utils/uploadMetadata"
-import uploadBundleToS3 from "../utils/uploadBundleToS3"
+import { uploadMetadata, uploadBundleToS3 } from "../utils/requests"
 
 import handleServerError from "./handleServerError"
 

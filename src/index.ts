@@ -1,14 +1,16 @@
 import { Command, flags } from '@oclif/command'
+
 import { log, error } from "./utils/log"
 import { doesFileExist, checksumFile } from "./utils"
-import getSignedRequest from "./utils/getSignedRequest"
+import { getSignedRequest } from "./utils/requests"
 import generateFab from './utils/generateFab'
+
 import { BuildStatus } from "./enums"
 
-import handleServerError from "./handlers/handleServerError"
-import handleDuplicateBundle from "./handlers/handleDuplicateBundle"
-import handleUniqueBundle from "./handlers/handleUniqueBundle"
 import handleBuildFailure from "./handlers/handleBuildFailure"
+import handleDuplicateBundle from "./handlers/handleDuplicateBundle"
+import handleServerError from "./handlers/handleServerError"
+import handleUniqueBundle from "./handlers/handleUniqueBundle"
 
 const FAB_FILE_PATH = "./fab.zip"
 
@@ -58,7 +60,10 @@ class LincFabUpload extends Command {
             // Get signed url
             const bundle_id = checksumFile(FAB_FILE_PATH)
             log("Validating FAB with Linc")
-            const srResponse = await getSignedRequest({ api_key: LINC_API_KEY, sitename: LINC_SITE_NAME, bundle_id })
+            const srResponse = await getSignedRequest({ 
+              api_key: LINC_API_KEY, 
+              sitename: LINC_SITE_NAME, bundle_id 
+            })
 
             if (srResponse.ok) {
               const { unique_bundle } = srResponse
