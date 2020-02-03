@@ -2,14 +2,15 @@
 enum PLATFORMS {
   TRAVIS = "travis",
   BUILDKITE = "buildkite",
-  CIRCLECI = "circleci"
+  CIRCLECI = "circleci",
+  GITLAB = "gitlab"
 }
 
 /* 
   Returns the name of the current CI platform 
 */
 export const getCI = () => {
-  const { TRAVIS, BUILDKITE, CIRCLECI } = process.env
+  const { TRAVIS, BUILDKITE, CIRCLECI, GITLAB_CI } = process.env
   if (TRAVIS) {
     return PLATFORMS.TRAVIS
   }
@@ -19,6 +20,9 @@ export const getCI = () => {
   if (CIRCLECI) {
     return PLATFORMS.CIRCLECI
   }
+  if (GITLAB_CI) {
+    return PLATFORMS.GITLAB
+  }
   return "unknown"
 }
 
@@ -26,7 +30,7 @@ export const getCI = () => {
   Returns the current git branch for a provided CI platform name.
 */
 export const getBranch = (platform: string) => {
-  const { TRAVIS_BRANCH, BUILDKITE_BRANCH, CIRCLE_BRANCH } = process.env
+  const { TRAVIS_BRANCH, BUILDKITE_BRANCH, CIRCLE_BRANCH, CI_COMMIT_BRANCH } = process.env
 
   switch (platform) {
     case PLATFORMS.TRAVIS:
@@ -37,6 +41,9 @@ export const getBranch = (platform: string) => {
 
     case PLATFORMS.CIRCLECI:
       return CIRCLE_BRANCH
+
+    case PLATFORMS.GITLAB:
+      return CI_COMMIT_BRANCH
 
     default:
       return "unkown-branch"
@@ -50,7 +57,8 @@ export const getRepo = (platform: string) => {
   const {
     TRAVIS_REPO_SLUG,
     BUILDKITE_REPO,
-    CIRCLE_PROJECT_REPONAME
+    CIRCLE_PROJECT_REPONAME,
+    CI_PROJECT_TITLE
   } = process.env
 
   switch (platform) {
@@ -62,6 +70,9 @@ export const getRepo = (platform: string) => {
 
     case PLATFORMS.CIRCLECI:
       return CIRCLE_PROJECT_REPONAME
+
+    case PLATFORMS.GITLAB:
+      return CI_PROJECT_TITLE
 
     default:
       return "unknown-repo"
