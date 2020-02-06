@@ -1,6 +1,6 @@
 {
   "name": "@bitgenics/fab-upload-cli",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "author": "Tom Trinca @plexey",
   "bin": {
     "fab-upload": "./bin/run"
