@@ -58,7 +58,7 @@ export const getRepo = (platform: string) => {
     TRAVIS_REPO_SLUG,
     BUILDKITE_REPO,
     CIRCLE_PROJECT_REPONAME,
-    CI_PROJECT_TITLE
+    CI_PROJECT_PATH
   } = process.env
 
   switch (platform) {
@@ -72,7 +72,7 @@ export const getRepo = (platform: string) => {
       return CIRCLE_PROJECT_REPONAME
 
     case PLATFORMS.GITLAB:
-      return CI_PROJECT_TITLE
+      return CI_PROJECT_PATH
 
     default:
       return "unknown-repo"
