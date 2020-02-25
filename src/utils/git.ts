@@ -1,35 +1,61 @@
-const util = require('util')
-const exec = util.promisify(require('child_process').exec)
+const util = require("util");
+const exec = util.promisify(require("child_process").exec);
 
-export const getRepository = async () => {
-  const { stdout, stderr } = await exec("git ls-remote --get-url");
+const executeCommand = async (command: string) => {
+  const { stdout, stderr } = await exec(command);
   if (stdout) {
-    return stdout.split("git@github.com:")[1].split(".git")[0];
+    return stdout;
   } else {
     throw new Error(stderr);
   }
 };
 
-const prettyFormats = {
-  commitHash: '%H',
-  treeHash: '%T',
-  authorName: '%an',
-  committerDate: '%ct', // unix time stamp
-  committerEmail: '%ce',
-  subject: '%s', // commit message
-}
-const numberOfLogs = 1
-const stringifyedFormats = JSON.stringify(prettyFormats)
-const gitCommand = `git log -${numberOfLogs} --pretty=format:'${stringifyedFormats}'`
+export const getRepository = async () => {
+  const command = "git ls-remote --get-url"
+  const response = await executeCommand(command)
+  return response.split("git@github.com:")[1].split(".git")[0]
+};
+
+const gitLog = (logCount: number, format: any) =>
+  `git log -${logCount} --pretty=format:'${format}'`;
+
+const getMainMetadata = async () => {
+  const format = JSON.stringify({
+    commitHash: "%H",
+    treeHash: "%T",
+    committerDate: "%ct", // unix time stamp
+    committerEmail: "%ce"
+  });
+  const command = gitLog(1, format);
+  const response = await executeCommand(command);
+  const metadata = JSON.parse(response);
+  metadata.committerDate = parseInt(metadata.committerDate) * 1000; // unix time stamp in milliseconds
+  return metadata;
+};
+
+const getSubject = async () => {
+  const subject = "%s"; // commit message
+  const command = gitLog(1, subject);
+  const response = await executeCommand(command);
+  return response;
+};
+
+const getAuthor = async () => {
+  const author = "%an"; // commit author
+  const command = gitLog(1, author);
+  const response = await executeCommand(command);
+  return response;
+};
 
 export const getLastCommit = async () => {
-  const command = `${gitCommand}`
-  const { stdout, stderr } = await exec(command)
-  if (stdout) {
-    const commit = JSON.parse(stdout)
-    commit.committerDate = parseInt(commit.committerDate) * 1000 // unix time stamp in milliseconds
-    return commit
-  } else {
-    throw new Error(stderr)
-  }
-}
+  const [commit, subject, authorName] = await Promise.all([
+    getMainMetadata(),
+    getSubject(),
+    getAuthor()
+  ]);
+  return {
+    ...commit,
+    subject,
+    authorName
+  };
+};
