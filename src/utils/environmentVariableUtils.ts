@@ -4,7 +4,8 @@ enum PLATFORMS {
   BUILDKITE = "buildkite",
   CIRCLECI = "circleci",
   GITLAB = "gitlab",
-  BAMBOO = "bamboo"
+  BAMBOO = "bamboo",
+  BITBUCKET = "bitbucket"
 }
 
 /* 
@@ -29,6 +30,11 @@ export const getCI = () => {
   // BAMBOO
   if (process.env.bamboo_planKey) {
     return PLATFORMS.BAMBOO
+  }
+
+  // BITBUCKET PIPELINES
+  if (process.env.BITBUCKET_BUILD_NUMBER) {
+    return PLATFORMS.BITBUCKET
   }
 
   return "unknown"
@@ -60,6 +66,10 @@ export const getBranch = (platform: string) => {
     case PLATFORMS.BAMBOO:
       const { bamboo_planRepository_branch } = process.env
       return bamboo_planRepository_branch || FALLBACK
+
+    case PLATFORMS.BITBUCKET:
+      const { BITBUCKET_BRANCH } = process.env
+      return BITBUCKET_BRANCH || FALLBACK
 
     default:
       return FALLBACK
@@ -98,6 +108,10 @@ export const getRepo = (platform: string) => {
           return repo
         }
       }
+
+    case PLATFORMS.BITBUCKET:
+      const { BITBUCKET_REPO_FULL_NAME } = process.env
+      return BITBUCKET_REPO_FULL_NAME || FALLBACK
 
     default:
       return FALLBACK
