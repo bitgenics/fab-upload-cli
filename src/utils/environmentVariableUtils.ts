@@ -3,7 +3,8 @@ enum PLATFORMS {
   TRAVIS = "travis",
   BUILDKITE = "buildkite",
   CIRCLECI = "circleci",
-  GITLAB = "gitlab"
+  GITLAB = "gitlab",
+  BAMBOO = "bamboo"
 }
 
 /* 
@@ -11,6 +12,7 @@ enum PLATFORMS {
 */
 export const getCI = () => {
   const { TRAVIS, BUILDKITE, CIRCLECI, GITLAB_CI } = process.env
+
   if (TRAVIS) {
     return PLATFORMS.TRAVIS
   }
@@ -23,6 +25,12 @@ export const getCI = () => {
   if (GITLAB_CI) {
     return PLATFORMS.GITLAB
   }
+
+  // BAMBOO
+  if (process.env.bamboo_planKey) {
+    return PLATFORMS.BAMBOO
+  }
+
   return "unknown"
 }
 
