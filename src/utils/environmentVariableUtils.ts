@@ -92,10 +92,10 @@ export const getRepo = (platform: string) => {
     case PLATFORMS.BAMBOO:
       const repoUrl = process.env.bamboo_planRepository_repositoryUrl
       if (repoUrl) {
-        const splitPoint = "https://bitbucket.org/"
-        const splitUrl = repoUrl.split(splitPoint)
-        if (splitUrl && splitUrl.length > 1 && splitUrl[1].length > 0) {
-          return splitUrl[1]
+        const regex = /([^\/])*\/([^\/]*)\/?$/;
+        const [repo] = repoUrl.match(regex) || "";
+        if (repo && repo.length > 0) {
+          return repo
         }
       }
 
