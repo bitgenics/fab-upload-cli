@@ -1,5 +1,5 @@
-export default function clipBuildLog(log: string, byteLimit: number): string {
-  const buf = Buffer.from(log);
+export default function clipBuildLog(buildLog: string, byteLimit: number): string {
+  const buf = Buffer.from(buildLog);
   if (buf.byteLength > byteLimit) {
     const message = Buffer.from(
       `\n\n---- ✂️ LOG CLIPPED ~ fab-upload-cli ✂️ ----\n\n`
@@ -13,6 +13,6 @@ export default function clipBuildLog(log: string, byteLimit: number): string {
     const joined = Buffer.concat([subA, message, subB]);
     return joined.toString();
   } else {
-    return log;
+    return buildLog;
   }
 };
