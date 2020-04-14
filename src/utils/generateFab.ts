@@ -1,9 +1,10 @@
-const util = require("util");
-const { BuildStatus } = require("../enums")
+import { promisify } from "util";
+import { BuildStatus } from "../enums"
+import clipBuildLog from './clipBuildLog'
 
-const exec = util.promisify(require("child_process").exec);
+const exec = promisify(require("child_process").exec);
 
-const generateFab = async () => {
+export default async function generateFab() {
   const started_at = Date.now()
   try {
     const { stdout } = await exec("npm run build:fab");
@@ -15,7 +16,7 @@ const generateFab = async () => {
       logs: [
         {
           cmd: "npm run build:fab",
-          log: stdout
+          log: clipBuildLog(stdout, 30000)
         }
       ]
     }
@@ -29,11 +30,9 @@ const generateFab = async () => {
       logs: [
         {
           cmd: "npm run build:fab",
-          log: stdout + stderr
+          log: clipBuildLog(stdout + stderr, 30000)
         }
       ]
     }
   }
 };
-
-export default generateFab
