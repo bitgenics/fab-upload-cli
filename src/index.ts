@@ -60,9 +60,9 @@ class LincFabUpload extends Command {
             // Get signed url
             const bundle_id = checksumFile(FAB_FILE_PATH)
             log("Validating FAB with Linc")
-            const srResponse = await getSignedRequest({ 
-              api_key: LINC_API_KEY, 
-              sitename: LINC_SITE_NAME, bundle_id 
+            const srResponse = await getSignedRequest({
+              api_key: LINC_API_KEY,
+              sitename: LINC_SITE_NAME, bundle_id
             })
 
             if (srResponse.ok) {
