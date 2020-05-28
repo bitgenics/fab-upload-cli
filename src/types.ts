@@ -1,6 +1,6 @@
 import { BuildStatus } from "./enums"
 
-export type CommitMetadata = {
+export type CommitInfo = {
   commitHash: string,
   treeHash: string,
   authorName: string,

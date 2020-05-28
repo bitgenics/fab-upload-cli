@@ -1,8 +1,9 @@
 import * as fs from "fs"
 import * as crypto from "crypto"
-import { getLastCommit } from "./git"
-import { getCI, getBranch, getRepo } from "./environmentVariableUtils"
-import { CommitMetadata } from "../types"
+import { CommitInfo } from "../types"
+
+import { getCIPlatform, getBranchFromPlatform, getRepoFromPlatform } from "./envVarUtils"
+import { getLastCommit, getBranchFromGit, getRepositoryFromGit } from "./git"
 import { note } from "./log"
 
 export const doesFileExist = (filePath: string) => {
@@ -32,33 +33,30 @@ export const composeLincCommitPageUrl = (
 ) => console.log(`https://app.linc.sh/sites/${sitename}/commit/${commitHash}`)
 
 
-export const getGitMetaData = async () => {
-  const platform = getCI()
-
+export const getCommitInfo = async (): Promise<CommitInfo> => {
+  const platform = getCIPlatform()
   const supportedPlatform = platform !== "unknown"
-
   if (supportedPlatform) {
     // pull branch & repo from environment variables
     // using provided CI platform
-    const branch = getBranch(platform)
-    const repository = getRepo(platform)
-
     const lastCommit = await getLastCommit()
-    const commitMetadata: CommitMetadata = {
+    const branch = getBranchFromPlatform(platform)
+    const repository = getRepoFromPlatform(platform)
+    const commitInfo = {
       ...lastCommit,
       branch,
       repository
     }
-
-    return commitMetadata
+    return commitInfo
   } else {
     note("Note: Unsupported CI platform detected")
-    // fallback
     const lastCommit = await getLastCommit()
+    const branch = await getBranchFromGit()
+    const repository = await getRepositoryFromGit()
     return {
       ...lastCommit,
-      branch: "unknown-branch",
-      repository: "unkown-repository"
+      branch,
+      repository,
     }
   }
 }

@@ -1,10 +1,10 @@
 import handleServerError from "./handleServerError"
 
-import { CommitMetadata, BuildInfo, BundleInfo } from "../types"
+import { CommitInfo, BuildInfo, BundleInfo } from "../types"
 
 import { logUrls, composeLincCommitPageUrl } from "../utils"
 import { uploadMetadata } from "../utils/requests"
-import { getGitMetaData } from "../utils"
+import { getCommitInfo } from "../utils"
 import { log } from "../utils/log"
 
 const duplicateBundle = async (
@@ -14,14 +14,14 @@ const duplicateBundle = async (
   buildInfo: BuildInfo
 ) => {
   log("Gathering commit data")
-  const gitMetaData: CommitMetadata = await getGitMetaData()
+  const commitInfo: CommitInfo = await getCommitInfo()
 
   log("Uploading commit data to Linc")
   const response = await uploadMetadata({
     sitename,
     api_key,
     bundle_info,
-    commit_info: gitMetaData,
+    commit_info: commitInfo,
     build_info: buildInfo,
   })
 
@@ -32,7 +32,7 @@ const duplicateBundle = async (
       log("FAB preview URLs:")
       logUrls(response.preview_urls)
       log("View commit on Linc:")
-      composeLincCommitPageUrl(sitename, gitMetaData.commitHash)
+      composeLincCommitPageUrl(sitename, commitInfo.commitHash)
     }
   } else {
     handleServerError(response.error)

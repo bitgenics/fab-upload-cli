@@ -1,7 +1,7 @@
 import fetch from "node-fetch"
 import * as fs from 'fs'
 
-import { CommitMetadata, BuildInfo, BundleInfo } from "../types"
+import { CommitInfo, BuildInfo, BundleInfo } from "../types"
 
 const SIGNED_REQUEST_ENDPONT = "https://graphql.linc.sh/fab_upload/signed_request"
 const UPLOAD_METADATA_ENDPONT = "https://graphql.linc.sh/fab_upload/upload_metadata"
@@ -16,7 +16,7 @@ type MetadataPayload = {
   sitename: string,
   api_key: string,
   bundle_info?: BundleInfo,
-  commit_info: CommitMetadata,
+  commit_info: CommitInfo,
   build_info: BuildInfo,
 }
 

@@ -5,15 +5,15 @@ enum PLATFORMS {
   CIRCLECI = "circleci",
   GITLAB = "gitlab",
   BAMBOO = "bamboo",
-  BITBUCKET = "bitbucket"
+  BITBUCKET = "bitbucket",
+  GITHUB = "github"
 }
 
 /* 
   Returns the name of the current CI platform 
 */
-export const getCI = () => {
+export const getCIPlatform = () => {
   const { TRAVIS, BUILDKITE, CIRCLECI, GITLAB_CI } = process.env
-
   if (TRAVIS) {
     return PLATFORMS.TRAVIS
   }
@@ -26,24 +26,22 @@ export const getCI = () => {
   if (GITLAB_CI) {
     return PLATFORMS.GITLAB
   }
-
-  // BAMBOO
   if (process.env.bamboo_planKey) {
     return PLATFORMS.BAMBOO
   }
-
-  // BITBUCKET PIPELINES
   if (process.env.BITBUCKET_BUILD_NUMBER) {
     return PLATFORMS.BITBUCKET
   }
-
+  if (process.env.GITHUB_RUN_ID) {
+    return PLATFORMS.GITHUB
+  }
   return "unknown"
 }
 
 /* 
   Returns the current git branch for a provided CI platform name.
 */
-export const getBranch = (platform: string) => {
+export const getBranchFromPlatform = (platform: string) => {
   const FALLBACK = "unknown-branch"
 
   switch (platform) {
@@ -71,6 +69,10 @@ export const getBranch = (platform: string) => {
       const { BITBUCKET_BRANCH } = process.env
       return BITBUCKET_BRANCH || FALLBACK
 
+    case PLATFORMS.GITHUB:
+      const { GITHUB_REF } = process.env
+      return GITHUB_REF || FALLBACK
+
     default:
       return FALLBACK
   }
@@ -79,7 +81,7 @@ export const getBranch = (platform: string) => {
 /* 
   Returns the current git repo for a provided CI platform name.
 */
-export const getRepo = (platform: string) => {
+export const getRepoFromPlatform = (platform: string) => {
   const FALLBACK = "unknown-repo"
 
   switch (platform) {
@@ -112,6 +114,10 @@ export const getRepo = (platform: string) => {
     case PLATFORMS.BITBUCKET:
       const { BITBUCKET_REPO_FULL_NAME } = process.env
       return BITBUCKET_REPO_FULL_NAME || FALLBACK
+
+    case PLATFORMS.GITHUB:
+      const { GITHUB_REPOSITORY } = process.env
+      return GITHUB_REPOSITORY || FALLBACK
 
     default:
       return FALLBACK

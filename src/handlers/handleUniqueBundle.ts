@@ -1,12 +1,12 @@
 import { logUrls, composeLincCommitPageUrl } from "../utils"
-import { getGitMetaData } from "../utils"
+import { getCommitInfo } from "../utils"
 import { log, error } from "../utils/log"
 
 import { uploadMetadata, uploadBundleToS3 } from "../utils/requests"
 
 import handleServerError from "./handleServerError"
 
-import { CommitMetadata, BuildInfo, BundleInfo } from "../types"
+import { CommitInfo, BuildInfo, BundleInfo } from "../types"
 
 const handleUniqueBundle = async (
   signedRequest: string,
@@ -22,14 +22,14 @@ const handleUniqueBundle = async (
     log("FAB successfully uploaded!")
 
     log("Gathering commit data")
-    const gitMetaData: CommitMetadata = await getGitMetaData()
+    const commitInfo: CommitInfo = await getCommitInfo()
 
     log("Uploading commit data to Linc")
     const response = await uploadMetadata({
       sitename,
       api_key,
       bundle_info,
-      commit_info: gitMetaData,
+      commit_info: commitInfo,
       build_info,
     })
 
@@ -40,7 +40,7 @@ const handleUniqueBundle = async (
         log("FAB preview URLs:")
         logUrls(response.preview_urls)
         log("View commit on Linc:")
-        composeLincCommitPageUrl(sitename, gitMetaData.commitHash)
+        composeLincCommitPageUrl(sitename, commitInfo.commitHash)
       }
     } else {
       handleServerError(response.error)

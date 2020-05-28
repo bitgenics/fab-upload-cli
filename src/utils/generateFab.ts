@@ -1,8 +1,10 @@
 import { promisify } from "util";
-import { BuildStatus } from "../enums"
-import clipBuildLog from './clipBuildLog'
+import child_process from "child_process"
 
-const exec = promisify(require("child_process").exec);
+import clipBuildLog from './clipBuildLog'
+import { BuildStatus } from "../enums"
+
+const exec = promisify(child_process.exec);
 
 export default async function generateFab() {
   const started_at = Date.now()
