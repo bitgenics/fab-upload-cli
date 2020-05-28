@@ -1,4 +1,4 @@
-export default function clipBuildLog(buildLog: string, byteLimit: number): string {
+export default function clipBuildLog(buildLog: string, byteLimit: number) {
   const buf = Buffer.from(buildLog);
   if (buf.byteLength > byteLimit) {
     const message = Buffer.from(
