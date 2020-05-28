@@ -1,6 +1,6 @@
 import { Command, flags } from '@oclif/command'
 
-import { log, error } from "./utils/log"
+import { log, error, note } from "./utils/log"
 import { doesFileExist, checksumFile } from "./utils"
 import { getSignedRequest } from "./utils/requests"
 import generateFab from './utils/generateFab'
@@ -11,6 +11,8 @@ import handleBuildFailure from "./handlers/handleBuildFailure"
 import handleDuplicateBundle from "./handlers/handleDuplicateBundle"
 import handleServerError from "./handlers/handleServerError"
 import handleUniqueBundle from "./handlers/handleUniqueBundle"
+
+import isGitDirty from "is-git-dirty"
 
 const FAB_FILE_PATH = "./fab.zip"
 
@@ -41,6 +43,18 @@ class LincFabUpload extends Command {
 
   async run() {
     const { args, flags } = this.parse(LincFabUpload)
+
+    const gitDirty: null | boolean = isGitDirty()
+
+    if (gitDirty === null) {
+      error("Error: Not a git repository. fab-upload must be run inside of a git repository.")
+      throw new Error("Not a git directory")
+    }
+
+    if (gitDirty === true) {
+      note("Warning: Detected uncommitted changes.")
+      await new Promise(resolve => setTimeout(resolve, 5000));
+    }
 
     const LINC_SITE_NAME = args.sitename || process.env.LINC_SITE_NAME
     const LINC_API_KEY = flags.apiKey || process.env.LINC_API_KEY
