@@ -47,12 +47,12 @@ class LincFabUpload extends Command {
     const gitDirty: null | boolean = isGitDirty()
 
     if (gitDirty === null) {
-      error("Error: Not a git repository. fab-upload must be run inside of a git repository.")
+      error("Error: No git repository detected. Please verify fab-upload is running inside of a git repository.")
       throw new Error("Not a git directory")
     }
 
     if (gitDirty === true) {
-      note("Warning: Detected uncommitted changes.")
+      note("Warning: Uncommitted changes detected! Continuing in 5s...")
       await new Promise(resolve => setTimeout(resolve, 5000));
     }
 
