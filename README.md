@@ -75,4 +75,4 @@ Once `fab-upload` has successfully uploaded a FAB to Linc, it will return a list
 
 ## Obtaining an API key
 
-`fab-upload` is currently in beta. To obtain an API key and start using `fab-upload`, contact us at [support@linc.sh](mailto:support@linc.sh).
+An API key for `fab-upload` can be obtained in [Linc](https://app.linc.sh/). See the [External CI Linc docs](https://linc.sh/docs/using-external-ci-with-linc) for more info.
