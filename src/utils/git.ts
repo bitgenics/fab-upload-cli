@@ -2,6 +2,7 @@ import { promisify } from "util"
 import child_process from "child_process"
 
 import { note } from "./log"
+import { objectFromEntries, zip } from "./collections"
 
 const exec = promisify(child_process.exec);
 
@@ -43,8 +44,22 @@ export const getBranchFromGit = async () => {
   }
 };
 
-export const gitLog = (logCount: number, format: string) =>
-  `git log -${logCount} --pretty=format:'${format}'`;
+const formatSeparator = "##FAB_UPLOAD_SEP##";
+
+export const gitLog = async <K extends string>(
+  logCount: number,
+  format: { [key in K]: string },
+): Promise<{ [key in K]: string }[]> => {
+  const keys = Object.keys(format) as K[];
+  const formatString = keys.map((key) => format[key]).join(formatSeparator);
+  const gitLogOutput = await executeCommand(
+    `git log -${logCount} --pretty=format:'${formatString}'`
+  );
+  return gitLogOutput.split("\n").map((gitLogEntry) => {
+    const values = gitLogEntry.split(formatSeparator);
+    return objectFromEntries(zip(keys, values));
+  });
+};
 
 type LastCommit = {
   subject: string
@@ -54,8 +69,9 @@ type LastCommit = {
   committerDate: number
   committerEmail: string
 }
+
 export const getLastCommit = async (): Promise<LastCommit> => {
-  const format = JSON.stringify({
+  const [gitLogData] = await gitLog(1, {
     subject: "%s",
     authorName: "%an",
     commitHash: "%H",
@@ -63,9 +79,9 @@ export const getLastCommit = async (): Promise<LastCommit> => {
     committerDate: "%ct", // unix time stamp
     committerEmail: "%ce"
   });
-  const command = gitLog(1, format);
-  const response = await executeCommand(command);
-  const metadata = JSON.parse(response);
-  metadata.committerDate = parseInt(metadata.committerDate) * 1000; // unix time stamp in milliseconds
-  return metadata;
+  const metadataLastCommit: LastCommit = {
+    ...gitLogData,
+    committerDate: parseInt(gitLogData.committerDate) * 1000, // unix time stamp in milliseconds
+  };
+  return metadataLastCommit;
 };
